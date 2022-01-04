@@ -14,7 +14,7 @@ const client = new Client_1.Client({
 void (async () => {
     try {
         await client.addEvents((0, path_1.join)(__dirname, "events"));
-        await client.addCommands((0, path_1.join)(__dirname, "commands", "text"));
+        await client.addCommands((0, path_1.join)(__dirname, "commands"));
         await client.login(config_1.config.token).catch((error) => {
             Logger_1.Logger.error(error.message);
         });

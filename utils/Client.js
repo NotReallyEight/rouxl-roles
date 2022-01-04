@@ -5,20 +5,12 @@ const tslib_1 = require("tslib");
 const discord_js_1 = (0, tslib_1.__importDefault)(require("discord.js"));
 const fs_1 = require("fs");
 const path_1 = require("path");
-const rest_1 = require("@discordjs/rest");
-const v9_1 = require("discord-api-types/v9");
-const config_1 = require("../config");
-const Logger_1 = require("./Logger");
 class Client extends discord_js_1.default.Client {
     constructor(options) {
         super(options);
         this.commands = [];
         this.componentEvents = [];
-        this.slashCommands = [];
         this.prefix = options.prefix;
-        this.restClient = new rest_1.REST({
-            version: "9",
-        }).setToken(config_1.config.token);
     }
     async addCommands(path) {
         const commandFiles = (0, fs_1.readdirSync)(path);
@@ -26,35 +18,6 @@ class Client extends discord_js_1.default.Client {
             // eslint-disable-next-line no-await-in-loop
             const { command } = (await Promise.resolve().then(() => (0, tslib_1.__importStar)(require((0, path_1.join)(path, file)))));
             this.commands.push(command);
-        }
-        return this;
-    }
-    async addSlashCommands(path) {
-        try {
-            const commandFiles = (0, fs_1.readdirSync)(path);
-            const commands = [];
-            for (const file of commandFiles) {
-                // eslint-disable-next-line no-await-in-loop
-                const { command } = (await Promise.resolve().then(() => (0, tslib_1.__importStar)(require((0, path_1.join)(path, file)))));
-                this.slashCommands.push(command);
-                do
-                    // eslint-disable-next-line no-await-in-loop
-                    await this.wait(500);
-                while (!this.user);
-                commands.push({
-                    type: command.type,
-                    name: command.name,
-                    description: command.description,
-                    options: command.options?.options ?? undefined,
-                });
-                // eslint-disable-next-line no-await-in-loop
-                await this.restClient?.put(v9_1.Routes.applicationGuildCommands(this.user.id, config_1.config.guildId), {
-                    body: commands,
-                });
-            }
-        }
-        catch (error) {
-            Logger_1.Logger.error(error.message);
         }
         return this;
     }
@@ -108,13 +71,6 @@ class Client extends discord_js_1.default.Client {
         if (!command)
             return false;
         await command.execute(message, args, this);
-        return true;
-    }
-    async processSlashCommand(interaction) {
-        const command = this.slashCommands.find((c) => c.name === interaction.commandName);
-        if (!command)
-            return false;
-        await command.execute(interaction, this);
         return true;
     }
     splitPrefixFromContent(message) {
