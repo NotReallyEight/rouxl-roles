@@ -23,7 +23,7 @@
   "homepage": "https://github.com/NotReallyEight/rouxl-roles#readme",
   "dependencies": {
     "@types/node": "^16.11.18",
-    "chalk": "^4.1.2",
+    "chalk": "^5.0.0",
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.5.0",
     "dotenv": "^10.0.0",
