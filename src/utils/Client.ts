@@ -3,12 +3,6 @@ import { readdirSync } from "fs";
 import { join } from "path";
 import type { Command } from "./Command";
 import type { Event } from "./Event";
-import type { SlashCommand } from "./SlashCommand";
-import { REST } from "@discordjs/rest";
-import type { RESTPostAPIApplicationGuildCommandsJSONBody } from "discord-api-types/v9";
-import { Routes } from "discord-api-types/v9";
-import { config } from "../config";
-import { Logger } from "./Logger";
 
 export interface ClientOptions extends Discord.ClientOptions {
 	prefix: string;
@@ -23,22 +17,13 @@ export interface CommandImport {
 	command: Command;
 }
 
-export interface SlashCommandImport {
-	command: SlashCommand;
-}
-
 export class Client extends Discord.Client {
 	commands: Command[] = [];
 	componentEvents: any[] = [];
 	prefix: string;
-	restClient?: REST;
-	slashCommands: SlashCommand[] = [];
 	constructor(options: ClientOptions) {
 		super(options);
 		this.prefix = options.prefix;
-		this.restClient = new REST({
-			version: "9",
-		}).setToken(config.token!);
 	}
 
 	public async addCommands(path: string): Promise<this> {
@@ -50,46 +35,6 @@ export class Client extends Discord.Client {
 
 			this.commands.push(command);
 		}
-		return this;
-	}
-
-	public async addSlashCommands(path: string): Promise<this> {
-		try {
-			const commandFiles = readdirSync(path);
-			const commands: RESTPostAPIApplicationGuildCommandsJSONBody[] = [];
-
-			for (const file of commandFiles) {
-				// eslint-disable-next-line no-await-in-loop
-				const { command } = (await import(
-					join(path, file)
-				)) as SlashCommandImport;
-
-				this.slashCommands.push(command);
-
-				do
-					// eslint-disable-next-line no-await-in-loop
-					await this.wait(500);
-				while (!this.user);
-
-				commands.push({
-					type: command.type,
-					name: command.name,
-					description: command.description,
-					options: command.options?.options ?? undefined,
-				});
-
-				// eslint-disable-next-line no-await-in-loop
-				await this.restClient?.put(
-					Routes.applicationGuildCommands(this.user.id, config.guildId!),
-					{
-						body: commands,
-					}
-				);
-			}
-		} catch (error: any) {
-			Logger.error((error as Error).message);
-		}
-
 		return this;
 	}
 
@@ -153,20 +98,6 @@ export class Client extends Discord.Client {
 		if (!command) return false;
 
 		await command.execute(message, args, this);
-
-		return true;
-	}
-
-	public async processSlashCommand(
-		interaction: Discord.BaseCommandInteraction
-	): Promise<boolean> {
-		const command = this.slashCommands.find(
-			(c) => c.name === interaction.commandName
-		);
-
-		if (!command) return false;
-
-		await command.execute(interaction, this);
 
 		return true;
 	}

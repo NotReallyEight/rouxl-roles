@@ -13,7 +13,7 @@ const client = new Client({
 void (async () => {
 	try {
 		await client.addEvents(join(__dirname, "events"));
-		await client.addCommands(join(__dirname, "commands", "text"));
+		await client.addCommands(join(__dirname, "commands"));
 		await client.login(config.token).catch((error) => {
 			Logger.error((error as Error).message);
 		});
