@@ -1,6 +1,7 @@
 import Discord from "discord.js";
 import { readdirSync } from "fs";
 import { join } from "path";
+import type ButtonEvent from "./ButtonEvent";
 import type { Command } from "./Command";
 import type { Event } from "./Event";
 
@@ -19,7 +20,7 @@ export interface CommandImport {
 
 export class Client extends Discord.Client {
 	commands: Command[] = [];
-	componentEvents: any[] = [];
+	buttonEvents: ButtonEvent[] = [];
 	prefix: string;
 	constructor(options: ClientOptions) {
 		super(options);
@@ -57,10 +58,11 @@ export class Client extends Discord.Client {
 		return this;
 	}
 
-	public getPrefixesForMessage(): string[] {
-		const prefixes = [this.prefix];
+	public getPrefixForMessage(message: Discord.Message): string[] {
+		if (message.content.match(this.mentionPrefixRegExp()!)?.length != null)
+			return [`<@!${this.user!.id}>`];
 
-		return prefixes;
+		return [this.prefix];
 	}
 
 	public hasCommand(
@@ -76,7 +78,7 @@ export class Client extends Discord.Client {
 			return [prefix, ""];
 		}
 
-		const args = content.split(" ");
+		const args = content.split(" ").filter((arg) => arg !== "");
 		const commandName = args.shift();
 		if (commandName === undefined) return null;
 		return [prefix, commandName.toLowerCase(), ...args];
@@ -105,7 +107,7 @@ export class Client extends Discord.Client {
 	public splitPrefixFromContent(
 		message: Discord.Message
 	): [string, string] | null {
-		const prefixes = this.getPrefixesForMessage();
+		const prefixes = this.getPrefixForMessage(message);
 
 		for (const prefix of prefixes)
 			if (message.content.toLowerCase().startsWith(prefix.toLowerCase()))
