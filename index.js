@@ -6,6 +6,7 @@ const discord_js_1 = (0, tslib_1.__importDefault)(require("discord.js"));
 const path_1 = require("path");
 const config_1 = require("./config");
 const Logger_1 = require("./utils/Logger");
+(0, config_1.setupClient)();
 const client = new Client_1.Client({
     intents: [discord_js_1.default.Intents.FLAGS.GUILDS, discord_js_1.default.Intents.FLAGS.GUILD_MESSAGES],
     prefix: config_1.config.prefix,

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.command = void 0;
+const config_1 = require("../config");
 const Command_1 = require("../utils/Command");
 exports.command = new Command_1.Command("ping", (message, _args, client) => {
     const messageReceived = Date.now();
@@ -20,7 +21,12 @@ exports.command = new Command_1.Command("ping", (message, _args, client) => {
                         inline: true,
                     },
                 ],
+                color: config_1.config.commandsEmbedColor,
             },
         ],
     });
+    void message.react(config_1.config.successEmoji);
+}, undefined, {
+    category: "misc",
+    description: "Check the latency of the bot.",
 });

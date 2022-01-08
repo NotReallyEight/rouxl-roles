@@ -9,7 +9,7 @@ class Client extends discord_js_1.default.Client {
     constructor(options) {
         super(options);
         this.commands = [];
-        this.componentEvents = [];
+        this.buttonEvents = [];
         this.prefix = options.prefix;
     }
     async addCommands(path) {
@@ -37,9 +37,10 @@ class Client extends discord_js_1.default.Client {
         }
         return this;
     }
-    getPrefixesForMessage() {
-        const prefixes = [this.prefix];
-        return prefixes;
+    getPrefixForMessage(message) {
+        if (message.content.match(this.mentionPrefixRegExp())?.length != null)
+            return [`<@!${this.user.id}>`];
+        return [this.prefix];
     }
     hasCommand(message) {
         const matchResult = this.splitPrefixFromContent(message);
@@ -51,7 +52,7 @@ class Client extends discord_js_1.default.Client {
                 return null;
             return [prefix, ""];
         }
-        const args = content.split(" ");
+        const args = content.split(" ").filter((arg) => arg !== "");
         const commandName = args.shift();
         if (commandName === undefined)
             return null;
@@ -74,7 +75,7 @@ class Client extends discord_js_1.default.Client {
         return true;
     }
     splitPrefixFromContent(message) {
-        const prefixes = this.getPrefixesForMessage();
+        const prefixes = this.getPrefixForMessage(message);
         for (const prefix of prefixes)
             if (message.content.toLowerCase().startsWith(prefix.toLowerCase()))
                 return [prefix, message.content.slice(prefix.length)];

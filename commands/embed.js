@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.command = void 0;
 const Command_1 = require("../utils/Command");
 const Logger_1 = require("../utils/Logger");
+const config_1 = require("../config");
 exports.command = new Command_1.Command("embed", (message, args) => {
     try {
         let embed;
@@ -27,6 +28,7 @@ exports.command = new Command_1.Command("embed", (message, args) => {
             else
                 return void message.channel.send("Channel not found.");
         }
+        void message.react(config_1.config.successEmoji);
         return void channel.send({
             embeds: [embed],
         });
@@ -36,4 +38,15 @@ exports.command = new Command_1.Command("embed", (message, args) => {
         Logger_1.Logger.error(err.message);
     }
     return undefined;
+}, {
+    custom: (message) => {
+        if (!config_1.config.staff.includes(message.author.id))
+            return false;
+        return true;
+    },
+}, {
+    category: "util",
+    description: "Send an embed message to a channel.",
+    errorMessage: "You do not have permissions to use this command.",
+    expectedArguments: "[channel] <json>",
 });

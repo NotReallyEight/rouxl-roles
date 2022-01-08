@@ -5,6 +5,7 @@ const tslib_1 = require("tslib");
 const Command_1 = require("../utils/Command");
 const util_1 = (0, tslib_1.__importDefault)(require("util"));
 const Logger_1 = require("../utils/Logger");
+const config_1 = require("../config");
 exports.command = new Command_1.Command("eval", async (message, args, _client) => {
     try {
         const text = args.join(" ");
@@ -16,7 +17,7 @@ exports.command = new Command_1.Command("eval", async (message, args, _client) =
                 embeds: [
                     {
                         title: "Eval",
-                        color: 0xbeeccd,
+                        color: config_1.config.commandsEmbedColor,
                         fields: [
                             {
                                 name: "Eval Input",
@@ -43,7 +44,7 @@ exports.command = new Command_1.Command("eval", async (message, args, _client) =
                 embeds: [
                     {
                         title: "Eval",
-                        color: 0xbeeccd,
+                        color: config_1.config.commandsEmbedColor,
                         fields: [
                             {
                                 name: "Eval Input",
@@ -90,8 +91,21 @@ exports.command = new Command_1.Command("eval", async (message, args, _client) =
                     },
                 ],
             });
+        void message.react(config_1.config.successEmoji);
     }
     catch (err) {
         Logger_1.Logger.error(err.message);
+        void message.channel.send(`${config_1.config.errorEmoji} ${err.message}`);
     }
+}, {
+    custom: (message) => {
+        if (!config_1.config.staff.includes(message.author.id))
+            return false;
+        return true;
+    },
+}, {
+    category: "dev",
+    description: "Evaluates code",
+    errorMessage: "You do not have permissions to use this command.",
+    expectedArguments: "<code>",
 });
